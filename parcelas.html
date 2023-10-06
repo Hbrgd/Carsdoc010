@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Calculadora de Parcelas de Carros</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        #calculator {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .center {
+            position: absolute;
+            bottom: 0;
+            left: 40%;
+            right: 40%;
+        }
+    </style>
+</head>
+<body>
+    <div id="calculator">
+        <h1>Calculadora de Parcelas de Carros</h1>
+        <label for="clientName">Nome do Cliente:</label>
+        <input type="text" id="clientName" placeholder="Nome do Cliente" />
+        <br>
+        <label for="carModel">Modelo do Veiculo:</label>
+        <input type="text" id="carModel" placeholder="Modelo do Veiculo" />
+        <br><br>
+        <label for="totalValue">Valor Total do Carro:</label>
+        <input type="text" id="totalValue" placeholder="Valor Total do Carro" oninput="removePunctuation(this)" />
+        <br>
+        <label for="downPayment">Valor da Entrada (opcional):</label>
+        <input type="text" id="downPayment" placeholder="Valor da Entrada" oninput="removePunctuation(this)" />
+        <br>
+        <button onclick="calculatePrestations()">Calcular</button>
+        <button onclick="saveData()">Salvar Dados</button>
+        <h2>Prestações:</h2>
+        <div id="results"></div>
+    </div>
+
+    <script>
+        function removePunctuation(input) {
+            // Remove caracteres não numéricos, exceto o ponto decimal
+            input.value = input.value.replace(/[^0-9,]/g, '');
+        }
+
+        // Ative o botão "Calcular" quando a tecla Enter for pressionada
+        document.addEventListener("keydown", function(event) {
+            if (event.key === "Enter") {
+                calculatePrestations();
+            }
+        });
+
+        function calculatePrestations() {
+            const clientName = document.getElementById("clientName").value;
+            const carModel = document.getElementById("carModel").value;
+            const totalValue = parseFloat(document.getElementById("totalValue").value);
+            const downPayment = document.getElementById("downPayment").value; // Permitir entrada vazia
+
+            if (isNaN(totalValue)) {
+                alert("Por favor, insira um valor total válido.");
+                return;
+            }
+
+            let remainingValue = totalValue;
+
+            if (downPayment !== "") {
+                remainingValue -= parseFloat(downPayment);
+            }
+
+            const installments = [24, 36, 48, 60];
+            const coefficients = [0.05650, 0.04136, 0.03080, 0.02530];
+            const resultsDiv = document.getElementById("results");
+            resultsDiv.innerHTML = "";
+
+            for (let i = 0; i < installments.length; i++) {
+                const months = installments[i];
+                const coefficient = coefficients[i];
+                const installmentAmount = remainingValue * coefficient;
+                resultsDiv.innerHTML += `<p>${months}x de R$ ${installmentAmount.toFixed(2)}</p>`;
+            }
+        }
+
+        function saveData() {
+            const clientName = document.getElementById("clientName").value;
+            const carModel = document.getElementById("carModel").value;
+            const totalValue = document.getElementById("totalValue").value;
+            const downPayment = document.getElementById("downPayment").value;
+            const installmentFields = document.querySelectorAll("#results p");
+            const installmentsText = Array.from(installmentFields).map(field => field.innerText).join("\n");
+
+            const filename = `dados_de_${clientName}_${carModel}.txt`;
+            const dataToSave = `Nome do Cliente: ${clientName}\nModelo do Carro: ${carModel}\nValor Total do Carro: ${totalValue}\nValor da Entrada: ${downPayment}\nPrestações:\n${installmentsText}`;
+            
+            // Crie um objeto Blob e um link para fazer o download do arquivo de texto
+            const blob = new Blob([dataToSave], { type: "text/plain" });
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = filename;
+            a.style.display = "none";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+    </script>
+</body>
+
+<div class="center">
+    <p>&copy; 2023 Heber Gomes Dias </p>
+</div>
+</html>
